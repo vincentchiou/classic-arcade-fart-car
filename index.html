@@ -391,6 +391,7 @@ function doFart(){
 let enemies=[];
 const EC=['#ff3333','#ff33ff','#33ffff'];
 const ES=[{c:19,r:1},{c:1,r:19},{c:19,r:19}];
+const EI=['enemyRed','enemyPurple','enemyCyan'];
 
 function initEnemies(){
   enemies=[];
@@ -398,7 +399,7 @@ function initEnemies(){
   for(let i=0;i<n;i++){
     const s=ES[i];
     enemies.push({col:s.c,row:s.r,x:cx(s.c),y:cy(s.r),
-      dx:-1,dy:0,spd:1.1+level*.3,color:EC[i],stun:0,ang:0,tmr:0});
+      dx:-1,dy:0,spd:1.1+level*.3,color:EC[i],asset:EI[i],stun:0,ang:0,tmr:0});
   }
 }
 
@@ -585,8 +586,37 @@ function rrect(x,y,w,h,r){
   ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
 }
 function d2a(dx,dy){return dx===1?0:dx===-1?Math.PI:dy===1?Math.PI/2:-Math.PI/2;}
+const CAR_SPRITES={
+  player:'assets/player-car.svg',
+  enemyRed:'assets/enemy-car-red.svg',
+  enemyPurple:'assets/enemy-car-purple.svg',
+  enemyCyan:'assets/enemy-car-cyan.svg',
+};
+const CAR_IMG=Object.fromEntries(Object.entries(CAR_SPRITES).map(([key,src])=>{
+  const img=new Image();
+  img.src=src;
+  return [key,img];
+}));
 
-function drawCar(x,y,angle,body,isP,stun){
+function drawCar(x,y,angle,body,isP,stun,assetKey){
+  const img=CAR_IMG[assetKey];
+  if(img&&img.complete&&img.naturalWidth>0){
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+    const w=isP?72:68, h=isP?45:43;
+    ctx.shadowColor=isP?'#ffdd55':body;
+    ctx.shadowBlur=stun>0?8:(isP?22:16);
+    ctx.drawImage(img,-w/2,-h/2,w,h);
+    ctx.shadowBlur=0;
+    if(stun>0){
+      ctx.rotate(-angle);
+      ctx.fillStyle='#ffff44';ctx.shadowColor='#ffff00';ctx.shadowBlur=12;
+      ctx.font='bold 18px Arial';ctx.textAlign='center';
+      ctx.fillText('★★',0,-28);
+      ctx.shadowBlur=0;
+    }
+    ctx.restore();
+    return;
+  }
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);
   ctx.shadowColor=body;ctx.shadowBlur=isP?22:14;
   ctx.fillStyle=body;rrect(-26,-14,52,28,8);ctx.fill();
@@ -626,13 +656,13 @@ function drawPlayer(){
     g.addColorStop(0,`rgba(255,130,0,${br*.4})`);g.addColorStop(1,'rgba(255,80,0,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(P.x,P.y,T*.9,0,Math.PI*2);ctx.fill();
   }
-  drawCar(P.x,P.y,d2a(P.dx,P.dy),'#ffdd00',true,0);
+  drawCar(P.x,P.y,d2a(P.dx,P.dy),'#ffdd00',true,0,'player');
 }
 
 function drawEnemies(){
   enemies.forEach(e=>{
     const ang=e.stun>0?e.ang:d2a(e.dx,e.dy);
-    drawCar(e.x,e.y,ang,e.color,false,e.stun);
+    drawCar(e.x,e.y,ang,e.color,false,e.stun,e.asset);
     if(e.stun>0){
       ctx.font='22px Arial';ctx.textAlign='center';
       ctx.fillText(['💫','⭐','💫','✨'][Math.floor(frame/8)%4],e.x,e.y-36);
