@@ -6,7 +6,7 @@
 <style>
 *{ margin:0; padding:0; box-sizing:border-box; }
 body{
-  background:#000;
+  background:#050010;
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   min-height:100vh;
@@ -14,33 +14,39 @@ body{
   color:#fff; user-select:none;
 }
 #gameTitle{
-  font-size:22px; color:#ff8800;
-  text-shadow:0 0 18px #ff6600, 0 0 36px #ff3300;
+  font-size:20px; color:#ff9a3d;
+  text-shadow:3px 3px 0 #0016a8;
   letter-spacing:5px; margin-bottom:8px;
   animation:glw 1.6s infinite alternate;
 }
 @keyframes glw{from{opacity:1}to{opacity:.5}}
-#wrap{ position:relative; flex-shrink:0; }
-canvas{ display:block; border:4px solid #0044cc; box-shadow:0 0 28px #0044cc; }
+#wrap{ position:relative; flex-shrink:0; border-radius:42px; overflow:hidden; background:#000; }
+canvas{
+  display:block;
+  border:0;
+  box-shadow:0 0 0 5px #050010, 0 0 0 9px #0016a8;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+}
 #overlay{
   position:absolute; top:0; left:0; width:100%; height:100%;
-  background:rgba(0,0,20,.9);
+  background:rgba(255,151,63,.94);
   display:flex; flex-direction:column;
   align-items:center; justify-content:center;
   gap:10px; overflow-y:auto;
 }
-#overlay h2{ font-size:26px; color:#ff8800; text-shadow:0 0 20px #ff4400; }
-#overlay p { font-size:14px; color:#ffee88; letter-spacing:1px; }
-#overlay .sub{ font-size:11px; color:#666; }
+#overlay h2{ font-size:26px; color:#ec008c; text-shadow:3px 3px 0 #0016a8; }
+#overlay p { font-size:14px; color:#0016a8; letter-spacing:1px; font-weight:bold; }
+#overlay .sub{ font-size:11px; color:#712600; }
 .btn{
-  padding:10px 32px; background:#003bb5; color:#fff;
-  border:2px solid #4488ff; font-size:14px;
+  padding:10px 32px; background:#ec008c; color:#ffff4f;
+  border:4px solid #0016a8; font-size:14px;
   font-family:'Courier New',monospace; cursor:pointer;
-  letter-spacing:3px; box-shadow:0 0 12px #4488ff;
-  transition:background .18s;
+  letter-spacing:3px; box-shadow:4px 4px 0 #050010;
+  transition:transform .08s;
 }
-.btn:hover{ background:#0055e0; }
-.btn.grn{ background:#004a00; border-color:#44ff44; box-shadow:0 0 12px #44ff44; }
+.btn:hover{ transform:translate(-1px,-1px); }
+.btn.grn{ background:#ff9a3d; border-color:#0016a8; box-shadow:4px 4px 0 #050010; }
 .btn.red{ background:#800000; border-color:#ff4444; box-shadow:0 0 12px #ff4444; }
 #lbTable{ border-collapse:collapse; margin:8px 0; font-size:13px; }
 #lbTable th{ color:#666; padding:4px 14px; border-bottom:1px solid #333; }
@@ -54,11 +60,11 @@ canvas{ display:block; border:4px solid #0044cc; box-shadow:0 0 28px #0044cc; }
 #ui{
   display:flex; justify-content:space-between;
   padding:6px 14px;
-  background:#000d22; border:4px solid #0044cc; border-top:none;
+  background:#050010; border:4px solid #0016a8; border-top:none;
   flex-shrink:0;
 }
-.uitxt{ color:#ffff00; font-size:13px; text-shadow:0 0 7px #ffff00; letter-spacing:1px; }
-#hint{ margin-top:6px; font-size:11px; color:#444; letter-spacing:1px; }
+.uitxt{ color:#ffff4f; font-size:13px; text-shadow:2px 2px 0 #0016a8; letter-spacing:1px; }
+#hint{ margin-top:10px; font-size:11px; color:#ff9a3d; letter-spacing:1px; }
 </style>
 </head>
 <body>
@@ -94,6 +100,7 @@ const T=64, COLS=21, ROWS=21;
 const cv=document.getElementById('c');
 const ctx=cv.getContext('2d');
 cv.width=T*COLS; cv.height=T*ROWS;
+ctx.imageSmoothingEnabled=false;
 
 // ── 新地圖（更開放，牆壁更少）──
 // 1=牆  0=路（可放油桶）  2=路（不放油桶，走廊/空地）
@@ -483,13 +490,12 @@ function drawMaze(){
     for(let c=0;c<COLS;c++){
       const px=c*T,py=r*T;
       if(maze[r][c]===1){
-        ctx.fillStyle='#001f4a';ctx.fillRect(px,py,T,T);
-        ctx.strokeStyle='#003a90';ctx.lineWidth=2;ctx.strokeRect(px+2,py+2,T-4,T-4);
-        ctx.shadowColor='#2266ff';ctx.shadowBlur=7;
-        ctx.strokeStyle='#0055cc';ctx.strokeRect(px+3,py+3,T-6,T-6);
-        ctx.shadowBlur=0;
+        ctx.fillStyle='#0016a8';ctx.fillRect(px,py,T,T);
+        ctx.fillStyle='#ec008c';ctx.fillRect(px+6,py+6,T-12,T-12);
       } else {
-        ctx.fillStyle='#00040f';ctx.fillRect(px,py,T,T);
+        ctx.fillStyle='#ff9a3d';ctx.fillRect(px,py,T,T);
+        ctx.fillStyle='rgba(255,197,84,.28)';
+        ctx.fillRect(px,py,T,4);
         if(maze[r][c]===0) drawBarrel(px+T/2,py+T/2);
       }
     }
@@ -497,18 +503,16 @@ function drawMaze(){
 }
 
 function drawBarrel(x,y){
-  const bob=Math.sin(frame*.06+x*.035)*2.5;
-  ctx.save();ctx.translate(x,y+bob);
-  ctx.fillStyle='#6b3200';ctx.beginPath();ctx.ellipse(0,4,12,18,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#b05800';ctx.beginPath();ctx.ellipse(0,-12,12,6,0,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#ff9900';ctx.lineWidth=2;
-  ctx.beginPath();ctx.ellipse(0,-2,13,4.5,0,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.ellipse(0,-7,13,4,0,0,Math.PI*2);ctx.stroke();
-  ctx.fillStyle='rgba(255,200,100,.35)';ctx.beginPath();ctx.ellipse(-2,0,4,10,-.3,0,Math.PI*2);ctx.fill();
-  ctx.shadowColor='#ff8000';ctx.shadowBlur=8+Math.sin(frame*.09)*3;
-  ctx.strokeStyle='rgba(255,150,0,.5)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.ellipse(0,4,12,18,0,0,Math.PI*2);ctx.stroke();
-  ctx.shadowBlur=0;ctx.restore();
+  const bob=Math.floor(Math.sin(frame*.08+x*.03)*2);
+  ctx.save();ctx.translate(Math.round(x)-16,Math.round(y)+bob-18);
+  ctx.fillStyle='#050010';ctx.fillRect(2,4,28,28);
+  ctx.fillStyle='#009b35';ctx.fillRect(8,0,16,36);
+  ctx.fillStyle='#ce1111';ctx.fillRect(12,4,12,28);
+  ctx.fillStyle='#ffff4f';ctx.fillRect(10,2,4,4);ctx.fillRect(18,30,4,4);
+  ctx.fillStyle='#050010';
+  ctx.fillRect(4,8,4,4);ctx.fillRect(24,8,4,4);
+  ctx.fillRect(4,24,4,4);ctx.fillRect(24,24,4,4);
+  ctx.restore();
 }
 
 // ═══════════════════════════════════════════
@@ -516,26 +520,21 @@ function drawBarrel(x,y){
 // ═══════════════════════════════════════════
 function drawPowerups(){
   powerups.forEach(pu=>{
-    const pulse=.9+Math.sin(frame*.1)*.12;
     const blink=Math.floor(frame/20)%2===0;
-    ctx.save();ctx.translate(pu.x,pu.y);ctx.scale(pulse,pulse);
-    // 光暈
-    const glowC=pu.type==='bigfart'?'#ff6600':'#44ff44';
-    const grd=ctx.createRadialGradient(0,0,0,0,0,T*.55);
-    grd.addColorStop(0,glowC.replace(')',',0.35)').replace('rgb','rgba'));
-    grd.addColorStop(0,`rgba(${pu.type==='bigfart'?'255,100,0':'68,255,68'},.35)`);
-    grd.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(0,0,T*.55,0,Math.PI*2);ctx.fill();
-    // 閃爍邊框
-    if(blink){
-      ctx.strokeStyle=glowC;ctx.lineWidth=3;ctx.shadowColor=glowC;ctx.shadowBlur=20;
-      ctx.beginPath();ctx.arc(0,0,T*.42,0,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;
+    const x=Math.round(pu.x)-12,y=Math.round(pu.y)-18;
+    ctx.save();
+    ctx.fillStyle='#ffff4f';
+    if(pu.type==='bigfart'){
+      ctx.fillRect(x+4,y+0,8,8);ctx.fillRect(x+12,y+8,8,8);
+      ctx.fillRect(x+4,y+16,8,8);ctx.fillRect(x+0,y+24,8,8);
+      ctx.fillRect(x+12,y+24,8,8);
+      if(blink){ctx.fillStyle='#ec008c';ctx.fillRect(x+20,y+10,6,6);}
+    } else {
+      ctx.fillRect(x+0,y+8,12,8);ctx.fillRect(x+10,y+0,8,24);
+      ctx.fillRect(x+18,y+8,8,8);ctx.fillRect(x+8,y+24,6,6);
+      if(blink){ctx.fillStyle='#0016a8';ctx.fillRect(x+24,y+4,6,6);}
     }
-    // emoji
-    ctx.font='36px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.shadowColor=glowC;ctx.shadowBlur=12;
-    ctx.fillText(pu.type==='bigfart'?'🔥':'💨',0,0);
-    ctx.shadowBlur=0;ctx.restore();
+    ctx.restore();
   });
 }
 
@@ -545,15 +544,19 @@ function drawPowerups(){
 function drawFarts(){
   farts.forEach(f=>{
     const ra=f.life/f.ml;
-    const c1=f.big?`rgba(255,120,0,${ra*.55})`:`rgba(60,255,30,${ra*.55})`;
-    const c2=f.big?`rgba(255,60,0,${ra*.28})`:`rgba(100,200,30,${ra*.28})`;
-    const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r);
-    g.addColorStop(0,c1);g.addColorStop(.55,c2);g.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();
-    if(ra>.45){
-      ctx.globalAlpha=(ra-.45)/.55;ctx.font=(f.big?'52':'38')+'px Arial';
-      ctx.textAlign='center';ctx.fillText(f.big?'💥':'💨',f.x,f.y+14);ctx.globalAlpha=1;
+    const cells=f.big?9:5, step=18, base=Math.floor(cells/2);
+    ctx.save();ctx.globalAlpha=Math.max(.18,ra*.95);
+    for(let yy=-base;yy<=base;yy++){
+      for(let xx=-base;xx<=base;xx++){
+        const d=Math.abs(xx)+Math.abs(yy);
+        if(d>base+1||((xx+yy+frame)%3===0&&ra<.65))continue;
+        ctx.fillStyle=d%2?'#ffff4f':'#fff9a8';
+        ctx.fillRect(Math.round(f.x+xx*step-8),Math.round(f.y+yy*step-8),16,16);
+        ctx.fillStyle='#050010';
+        ctx.fillRect(Math.round(f.x+xx*step+6),Math.round(f.y+yy*step+6),4,4);
+      }
     }
+    ctx.restore();ctx.globalAlpha=1;
   });
 }
 
@@ -563,9 +566,9 @@ function drawFarts(){
 function drawPtcls(){
   ptcls.forEach(p=>{
     ctx.globalAlpha=p.life/p.ml;ctx.fillStyle=p.col;
-    ctx.shadowColor=p.col;ctx.shadowBlur=9;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.sz*(p.life/p.ml),0,Math.PI*2);ctx.fill();
-  });ctx.globalAlpha=1;ctx.shadowBlur=0;
+    const s=Math.max(3,Math.round(p.sz*(p.life/p.ml)));
+    ctx.fillRect(Math.round(p.x),Math.round(p.y),s,s);
+  });ctx.globalAlpha=1;
 }
 function drawFloats(){
   floats.forEach(f=>{
@@ -599,52 +602,42 @@ const CAR_IMG=Object.fromEntries(Object.entries(CAR_SPRITES).map(([key,src])=>{
 }));
 
 function drawCar(x,y,angle,body,isP,stun,assetKey){
-  const img=CAR_IMG[assetKey];
-  if(img&&img.complete&&img.naturalWidth>0){
-    ctx.save();ctx.translate(x,y);ctx.rotate(angle);
-    const w=isP?72:68, h=isP?45:43;
-    ctx.shadowColor=isP?'#ffdd55':body;
-    ctx.shadowBlur=stun>0?8:(isP?22:16);
-    ctx.drawImage(img,-w/2,-h/2,w,h);
-    ctx.shadowBlur=0;
-    if(stun>0){
-      ctx.rotate(-angle);
-      ctx.fillStyle='#ffff44';ctx.shadowColor='#ffff00';ctx.shadowBlur=12;
-      ctx.font='bold 18px Arial';ctx.textAlign='center';
-      ctx.fillText('★★',0,-28);
-      ctx.shadowBlur=0;
-    }
-    ctx.restore();
-    return;
-  }
-  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
-  ctx.shadowColor=body;ctx.shadowBlur=isP?22:14;
-  ctx.fillStyle=body;rrect(-26,-14,52,28,8);ctx.fill();
-  ctx.fillStyle=isP?'#ffbb00':'#882200';rrect(-10,-26,34,18,6);ctx.fill();
-  ctx.shadowBlur=0;
+  const palette={
+    player:['#0016a8','#2d8cff','#ffffff','#050010'],
+    enemyRed:['#050010','#f01818','#ff9a3d','#0016a8'],
+    enemyPurple:['#050010','#ec008c','#ff9a3d','#0016a8'],
+    enemyCyan:['#050010','#00a8ff','#ffffff','#0016a8'],
+  }[assetKey]||['#050010',body,'#ffffff','#0016a8'];
+  const [outline,main,hi,glass]=palette;
+  ctx.save();
+  ctx.translate(Math.round(x),Math.round(y));
+  ctx.rotate(angle);
+  ctx.translate(-24,-18);
+  ctx.fillStyle=outline;
+  ctx.fillRect(4,8,40,24);
+  ctx.fillRect(0,16,8,12);
+  ctx.fillRect(38,12,10,16);
+  ctx.fillStyle=main;
+  ctx.fillRect(8,8,28,8);
+  ctx.fillRect(8,16,36,12);
+  ctx.fillRect(14,28,22,4);
+  ctx.fillStyle=glass;
+  ctx.fillRect(18,4,12,12);
+  ctx.fillRect(30,8,8,8);
+  ctx.fillStyle=hi;
+  ctx.fillRect(40,14,6,4);
+  ctx.fillRect(40,24,6,4);
+  ctx.fillStyle=outline;
+  ctx.fillRect(8,30,8,8);
+  ctx.fillRect(32,30,8,8);
+  ctx.fillStyle=hi;
+  ctx.fillRect(10,32,4,4);
+  ctx.fillRect(34,32,4,4);
   if(stun>0){
-    ctx.fillStyle='#111';rrect(-6,-22,26,12,4);ctx.fill();
-    ctx.fillStyle='#ffff44';ctx.font='bold 13px Arial';
-    ctx.textAlign='center';ctx.fillText('★★',7,-14);
-  } else {
-    ctx.fillStyle=isP?'#aaddff':'#ff5555';
-    ctx.shadowColor=isP?'#88aaff':'#ff0000';ctx.shadowBlur=10;
-    rrect(-6,-22,26,12,4);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle='#ffff4f';
+    ctx.fillRect(14,-8,6,6);ctx.fillRect(26,-12,6,6);ctx.fillRect(34,-4,6,6);
   }
-  ctx.fillStyle='#222';
-  [-16,16].forEach(wx=>{
-    ctx.beginPath();ctx.arc(wx,16,8,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#555';ctx.beginPath();ctx.arc(wx,16,4,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle='#222';
-  });
-  if(isP){
-    ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=16;
-    ctx.fillRect(24,-10,8,6);ctx.fillRect(24,4,8,6);
-  } else {
-    ctx.fillStyle='#ff2222';ctx.shadowColor='#ff0000';ctx.shadowBlur=16;
-    ctx.fillRect(-32,-10,8,6);ctx.fillRect(-32,4,8,6);
-  }
-  ctx.shadowBlur=0;ctx.restore();
+  ctx.restore();
 }
 
 function drawPlayer(){
@@ -652,9 +645,13 @@ function drawPlayer(){
   // 大屁光暈
   if(P.bigFart>0){
     const br=P.bigFart/300;
-    const g=ctx.createRadialGradient(P.x,P.y,0,P.x,P.y,T*.9);
-    g.addColorStop(0,`rgba(255,130,0,${br*.4})`);g.addColorStop(1,'rgba(255,80,0,0)');
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(P.x,P.y,T*.9,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=br*.7;
+    ctx.fillStyle='#ffff4f';
+    ctx.fillRect(Math.round(P.x)-34,Math.round(P.y)-34,68,8);
+    ctx.fillRect(Math.round(P.x)-34,Math.round(P.y)+26,68,8);
+    ctx.fillRect(Math.round(P.x)-34,Math.round(P.y)-34,8,68);
+    ctx.fillRect(Math.round(P.x)+26,Math.round(P.y)-34,8,68);
+    ctx.globalAlpha=1;
   }
   drawCar(P.x,P.y,d2a(P.dx,P.dy),'#ffdd00',true,0,'player');
 }
